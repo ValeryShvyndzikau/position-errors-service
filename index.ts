@@ -1,5 +1,19 @@
   
-  import {first, last, get, eq, isEmpty, find, reduce, split, replace} from 'lodash';
+  import {flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
+
+
+
+
+const collection = [
+  {id: 5, x: 1, y: 1},
+  {id: 4, x: 1, y: 1},
+  {id: 7, x: 1, y: 1},
+  {id: 4, x: 2, y: 2}
+]
+
+console.log(uniqBy(collection, 'x'))
+
+
 
   
   const newPosition = {
@@ -62,6 +76,11 @@
   },
   {
     "path": "locations.0.primaryJob",
+    "strategy": "required",
+    "invalid": true
+  },
+    {
+    "path": "locations.1.primaryJob",
     "strategy": "required",
     "invalid": true
   },
@@ -137,12 +156,29 @@ class PositionErrorsService {
 
   // }
 
+  public buildLocalizedError(errors, position) {
+      return flow([
+        () => this.format(errors, position),
+        (formatted) => {
+         return this.localize()
+        },
+        (localized) => this.combineToSingleError()
+      ])();
+  }
+
   public combineToLocalizedError(errors): Error {
 
     /*
     flow([
-      () => this.formatAndLocalize(),
-      (formattedErrors) => this.combineToSingleError()
+      () => this.format(),
+      (formatted) => this.localize(),
+      (localized) => this.combineToSingleError()
+    ])
+
+    flow2([
+      () => this.localize(), // flat array via map
+      (localized) => this.groupBySections(),
+      (grouped) => this.combineToSingleError()
     ])
 
 
@@ -150,7 +186,7 @@ class PositionErrorsService {
 
   }
 
-  private formatAndLocalize(errors, position) {
+  private format(errors, position) {
 
     const r = reduce(errors, (acc, error) => {
 
@@ -168,12 +204,25 @@ class PositionErrorsService {
 
       return {
         ...acc,
-        [sectionName]: isEmpty(acc[sectionName]) ? [formattedError] : [...acc[sectionName], formattedError]
+        [sectionName]: isEmpty(acc[sectionName]) ? [formattedError] : uniqBy([...acc[sectionName], formattedError], 'fieldName')
       }
 
-  }, {})
+    }, {})
 
-  return r;
+    return r;
+  }
+
+  private localize(formattedErrors) {
+
+    console.log()
+    const r = reduce(formattedErrors, (acc, current) => {
+
+      return {
+       // ...acc,
+       // [sectionName]: isEmpty(acc[sectionName]) ? [formattedError] : uniqBy([...acc[sectionName], formattedError], 'fieldName')
+      }
+
+    }, {})
   }
 
   private getSectionName(path: string[]): string {
@@ -189,9 +238,7 @@ class PositionErrorsService {
   }
 
   private localizeField(fieldName: string): string {
-
-    return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${fieldName}`)
-
+    return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`)
   }
 
 
@@ -199,5 +246,12 @@ class PositionErrorsService {
 }
 
 
+const service = new PositionErrorsService();
 
-console.log(createMapOfParents(validationResult, newPosition), 'vr')
+console.log(service.buildLocalizedError(validationResult, newPosition), 'service result')
+
+
+
+
+
+//console.log(createMapOfParents(validationResult, newPosition), 'vr')
