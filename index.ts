@@ -154,9 +154,10 @@ class PositionErrorsService {
 
     const r = reduce(errors, (acc, error) => {
 
-      const pathSegments = split(error.path, '.');
-      const sectionName = first(pathSegments);
-      const fieldName = last(pathSegments);
+      //const pathSegments = split(error.path, '.');
+      // TODO: Consider to rename to id
+      const sectionName = this.getSectionName(error.path);
+      const fieldName = this.getFieldName(error.path);
 
       const formattedError = {
         ...error,
@@ -183,13 +184,13 @@ class PositionErrorsService {
     return last(split(path, '.'));
   }
 
-  private localizeSection(sectionName) {
+  private localizeSection(sectionName: string): string {
     return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`)
   }
 
-  private localizeField(value) {
+  private localizeField(fieldName: string): string {
 
-    return 'field_pefix' + value;
+    return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${fieldName}`)
 
   }
 
