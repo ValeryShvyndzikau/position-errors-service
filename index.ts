@@ -166,7 +166,7 @@ class PositionErrorsAdapter {
       // ])();
   }
 
-  public combineToLocalizedError(errors): Error {
+  public transformToErrorInterface(errors): Error {
 
     /*
     flow([
@@ -178,7 +178,7 @@ class PositionErrorsAdapter {
     flow2([
       () => this.localize(), // flat array via map
       (localized) => this.groupBySections(),
-      (grouped) => this.combineToSingleErrorInterface()
+      (groupped) => this.combineToSingleErrorInterface()
     ])
 
 
@@ -231,7 +231,6 @@ class PositionErrorsAdapter {
     const localized = map(errors, ({path, strategy}) => {
 
       return {
-        // TODO: getLocalizedSectionName
         description: this.localizeStrategy(strategy),
         sectionName: this.localizeSection(path),
         fieldName: (
@@ -239,27 +238,9 @@ class PositionErrorsAdapter {
             ? this.getCustomDataFieldName(path, position)
             : this.localizeField(path)
         )
-        //fieldName: eq(sectionName, 'positionCustomData')
-         // ? this.getCustomDataFieldName(error, position) : this.localizeField(this.getFieldName(error))
-//eq(sectionName, 'positionCustomData') ? getDynamicFieldName(error.path, position) : fieldName
       }
-
-    //console.log(error, 'error')
     })
   }
-
-  // private getSectionName(error: ValidationError): string {  
-  //   return first(this.getSplittedPath(error));
-  // }
-
-  // private getFieldName(error: ValidationError, position: Position): string {
-  //   //return includes(error.path, 'positionCustomData') ? this.getCustomDataFieldName()
-  //   return last(this.getSplittedPath(error));
-  // }
-
-  // private getSplittedPath(error: ValidationError): string[] {
-  //   return split(get(error, 'path'), '.');
-  // }
 
   private getCustomDataFieldName(path: string, position: Position): string {
     return get(replace(path, 'value', 'name'), position);
@@ -278,38 +259,12 @@ class PositionErrorsAdapter {
   }
 
   private localizeField(path: string): string {
-    // TODO: Check dynamic bahaviour, whether it returns the key intself or not
-    //return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
     return flow([
       () => split(path, '.'),
       (splittedPath) => last(splittedPath),
       (fieldName) => this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`)
-    ])()
+    ])();
   }
-
-  // private localizeField(fieldName: string): string {
-  //   // TODO: Check dynamic bahaviour, whether it returns the key intself or not
-  //   //return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
-  //   return flow([
-  //     () => this.getSplittedPath(),
-  //     () => this.getFieldName(),
-  //     (sectionName) => this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`)
-  //   ])()
-  // }
-
-  // private localizeCustomDataField() {
-
-  // }
-}
-
-function getDynamicFieldName(path, data) {
-
-  const p = replace(path, 'value', 'name');
-  console.log(p, 'p')
-
-  return get(data, p)
-
-
 }
 
 
