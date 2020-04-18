@@ -230,8 +230,9 @@ class PositionErrorsAdapter {
 
       return {
         // TODO: getLocalizedSectionName
-        sectionName: this.localizeSection(this.getSectionName()),
-        fieldName: this.getFieldName()
+        description: this.localizeStrategy(error),
+        sectionName: this.localizeSection(this.getSectionName(error)),
+        fieldName: this.localizeField(this.getFieldName(error))
 
       }
 
@@ -242,36 +243,28 @@ class PositionErrorsAdapter {
   }
 
   private getSectionName(error: ValidationError): string {
-    //return first(split(path, '.'));
-    // return flow([
-    //   (error) => get(error, 'path'),
-    //   (path) => split(path, '.'),
-    //   (splittedPath) => first(splittedPath)
-    // ])(error);
-
     return first(this.getSplittedPath(error));
   }
 
   private getFieldName(error: ValidationError): string {
-    // return flow([
-    //   (error) => get(error, 'path'),
-    //   (path) => split(path, '.'),
-    //   (splittedPath) => first(splittedPath)
-    // ])(error);
-
     return last(this.getSplittedPath(error));
   }
 
-  private getSplittedPath(error): string[] {
+  private getSplittedPath(error: ValidationError): string[] {
     return split(get(error, 'path'), '.');
   }
 
+  private localizeStrategy(error: ValidationError): string {
+    return this.propertyFilter(`html.multiplePositions.editor.validation.strategies.${error.strategy}`);
+  }
+
   private localizeSection(sectionName: string): string {
-    return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`)
+    return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`);
   }
 
   private localizeField(fieldName: string): string {
-    return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`)
+    // TODO: Check dynamic bahaviour, whether it returns the key intself or not
+    return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
   }
 }
 
