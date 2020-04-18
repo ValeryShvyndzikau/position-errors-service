@@ -1,5 +1,5 @@
   
-  import {map, flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
+  import {map, includes, flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
 
 
 
@@ -225,47 +225,91 @@ class PositionErrorsAdapter {
     }, {})
   }
 
+  //private localizaCustomData
+
   private localize2(errors, position) { 
-    const localized = map(errors, (error) => {
+    const localized = map(errors, ({path, strategy}) => {
 
       return {
         // TODO: getLocalizedSectionName
-        description: this.localizeStrategy(error),
-        sectionName: this.localizeSection(this.getSectionName(error)),
-        fieldName: this.localizeField(this.getFieldName(error))
-
+        description: this.localizeStrategy(strategy),
+        sectionName: this.localizeSection(path),
+        fieldName: (
+          includes(path, 'positionCustomData')
+            ? this.getCustomDataFieldName(path, position)
+            : this.localizeField(path)
+        )
+        //fieldName: eq(sectionName, 'positionCustomData')
+         // ? this.getCustomDataFieldName(error, position) : this.localizeField(this.getFieldName(error))
+//eq(sectionName, 'positionCustomData') ? getDynamicFieldName(error.path, position) : fieldName
       }
 
-    console.log(error, 'error')
+    //console.log(error, 'error')
     })
-
-
   }
 
-  private getSectionName(error: ValidationError): string {
-    return first(this.getSplittedPath(error));
+  // private getSectionName(error: ValidationError): string {  
+  //   return first(this.getSplittedPath(error));
+  // }
+
+  // private getFieldName(error: ValidationError, position: Position): string {
+  //   //return includes(error.path, 'positionCustomData') ? this.getCustomDataFieldName()
+  //   return last(this.getSplittedPath(error));
+  // }
+
+  // private getSplittedPath(error: ValidationError): string[] {
+  //   return split(get(error, 'path'), '.');
+  // }
+
+  private getCustomDataFieldName(path: string, position: Position): string {
+    return get(replace(path, 'value', 'name'), position);
   }
 
-  private getFieldName(error: ValidationError): string {
-    return last(this.getSplittedPath(error));
+  private localizeStrategy(strategy: string): string {
+    return this.propertyFilter(`html.multiplePositions.editor.validation.strategies.${strategy}`);
   }
 
-  private getSplittedPath(error: ValidationError): string[] {
-    return split(get(error, 'path'), '.');
+  private localizeSection(path: string): string {
+    return flow([
+      () => split(path, '.'),
+      (splittedPath) => first(splittedPath),
+      (sectionName) => this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`)
+    ])();
   }
 
-  private localizeStrategy(error: ValidationError): string {
-    return this.propertyFilter(`html.multiplePositions.editor.validation.strategies.${error.strategy}`);
-  }
-
-  private localizeSection(sectionName: string): string {
-    return this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`);
-  }
-
-  private localizeField(fieldName: string): string {
+  private localizeField(path: string): string {
     // TODO: Check dynamic bahaviour, whether it returns the key intself or not
-    return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
+    //return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
+    return flow([
+      () => split(path, '.'),
+      (splittedPath) => last(splittedPath),
+      (fieldName) => this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`)
+    ])()
   }
+
+  // private localizeField(fieldName: string): string {
+  //   // TODO: Check dynamic bahaviour, whether it returns the key intself or not
+  //   //return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`);
+  //   return flow([
+  //     () => this.getSplittedPath(),
+  //     () => this.getFieldName(),
+  //     (sectionName) => this.propertyFilter(`html.multiplePositions.editor.validation.sections.${sectionName}`)
+  //   ])()
+  // }
+
+  // private localizeCustomDataField() {
+
+  // }
+}
+
+function getDynamicFieldName(path, data) {
+
+  const p = replace(path, 'value', 'name');
+  console.log(p, 'p')
+
+  return get(data, p)
+
+
 }
 
 
