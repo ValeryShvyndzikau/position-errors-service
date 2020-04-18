@@ -148,7 +148,7 @@ type Error = {
 
 }
 
-class PositionErrorsService {
+class PositionErrorsAdapter {
 
   propertyFilter = (value) => value;
 
@@ -157,13 +157,13 @@ class PositionErrorsService {
   // }
 
   public buildLocalizedError(errors, position) {
-      return flow([
-        () => this.format(errors, position),
-        (formatted) => {
-         return this.localize()
-        },
-        (localized) => this.combineToSingleError()
-      ])();
+      // return flow([
+      //   () => this.format(errors, position),
+      //   (formatted) => {
+      //    return this.localize()
+      //   },
+      //   (localized) => this.combineToSingleError()
+      // ])();
   }
 
   public combineToLocalizedError(errors): Error {
@@ -178,7 +178,7 @@ class PositionErrorsService {
     flow2([
       () => this.localize(), // flat array via map
       (localized) => this.groupBySections(),
-      (grouped) => this.combineToSingleError()
+      (grouped) => this.combineToSingleErrorInterface()
     ])
 
 
@@ -225,6 +225,10 @@ class PositionErrorsService {
     }, {})
   }
 
+  private localize2() {
+
+  }
+
   private getSectionName(path: string[]): string {
     return first(split(path, '.'));
   }
@@ -246,7 +250,7 @@ class PositionErrorsService {
 }
 
 
-const service = new PositionErrorsService();
+const service = new PositionErrorsAdapter();
 
 console.log(service.buildLocalizedError(validationResult, newPosition), 'service result')
 
