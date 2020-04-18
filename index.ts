@@ -1,5 +1,5 @@
   
-  import {flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
+  import {map, flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
 
 
 
@@ -225,16 +225,45 @@ class PositionErrorsAdapter {
     }, {})
   }
 
-  private localize2() {
+  private localize2(errors, position) { 
+    const localized = map(errors, (error) => {
+
+      return {
+        // TODO: getLocalizedSectionName
+        sectionName: this.localizeSection(this.getSectionName()),
+        fieldName: this.getFieldName()
+
+      }
+
+    console.log(error, 'error')
+    })
+
 
   }
 
-  private getSectionName(path: string[]): string {
-    return first(split(path, '.'));
+  private getSectionName(error: ValidationError): string {
+    //return first(split(path, '.'));
+    // return flow([
+    //   (error) => get(error, 'path'),
+    //   (path) => split(path, '.'),
+    //   (splittedPath) => first(splittedPath)
+    // ])(error);
+
+    return first(this.getSplittedPath(error));
   }
 
-  private getFieldName(path: string[]): string {
-    return last(split(path, '.'));
+  private getFieldName(error: ValidationError): string {
+    // return flow([
+    //   (error) => get(error, 'path'),
+    //   (path) => split(path, '.'),
+    //   (splittedPath) => first(splittedPath)
+    // ])(error);
+
+    return last(this.getSplittedPath(error));
+  }
+
+  private getSplittedPath(error): string[] {
+    return split(get(error, 'path'), '.');
   }
 
   private localizeSection(sectionName: string): string {
@@ -244,15 +273,12 @@ class PositionErrorsAdapter {
   private localizeField(fieldName: string): string {
     return this.propertyFilter(`html.multiplePositions.editor.validation.fields.${fieldName}`)
   }
-
-
-
 }
 
 
 const service = new PositionErrorsAdapter();
 
-console.log(service.buildLocalizedError(validationResult, newPosition), 'service result')
+console.log(service.localize2(validationResult, newPosition), 'service result')
 
 
 
