@@ -113,15 +113,14 @@ class PositionErrorsAdapter {
   propertyFilter = (value) => value;
 
   public transformToErrorInterface(errors, position): Error {
-
     return flow([
       () => this.localize(errors, position),
       (localizedErrors) => this.groupBySections(localizedErrors),
-      (grouppedErrors) => this.buildToSingleMessage(grouppedErrors)
+      (grouppedErrors) => ({code: '', text: this.buildToSingleMessage(grouppedErrors)})
     ])();
   }
 
-  private localize(errors, position) { 
+  private localize(errors: Errors, position: Position): LocalizedError[] { 
     return map(errors, ({path, strategy}) => ({
       description: this.localizeStrategy(strategy),
       sectionName: this.localizeSection(path),
@@ -133,7 +132,7 @@ class PositionErrorsAdapter {
     }));
   }
 
-  private groupBySections(localizedErrors: LocalizedErrors): GrouppedErrors {
+  private groupBySections(localizedErrors: LocalizedError[]): GrouppedError[] {
     return reduce(localizedErrors, (acc, error) => ({
       ...acc,
       //[error.sectionName]: uniqBy(concat(get(acc, error.sectionName, []), error), 'fieldName')
@@ -145,7 +144,7 @@ class PositionErrorsAdapter {
     }), {});
   }
 
-  private buildToSingleMessage(grouppedErrors) {
+  private buildToSingleMessage(grouppedErrors): string {
     return reduce(grouppedErrors, (message, errors, groupName) => (
       `${message}
         <div>
