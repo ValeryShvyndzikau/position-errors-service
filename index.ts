@@ -139,6 +139,7 @@ class PositionErrorsAdapter {
       [error.sectionName]: flow([
         () => get(acc, error.sectionName, []),
         (errors) => concat(errors, error),
+        // TODO: !!! Adjust unig by field and strategy, one field can has few errors !!!
         (errors) => uniqBy(errors, 'fieldName')
       ])()
     }), {});
