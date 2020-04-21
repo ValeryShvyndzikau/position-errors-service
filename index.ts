@@ -1,19 +1,5 @@
   
-  import {map, join, includes, concat, flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
-
-
-console.log(concat([], 'abc'), 'test concat')
-
-
-const collection = [
-  {id: 5, x: 1, y: 1},
-  {id: 4, x: 1, y: 1},
-  {id: 7, x: 1, y: 1},
-  {id: 4, x: 2, y: 2}
-]
-
-//console.log(uniqBy(collection, 'x'))
-
+  import {isEqual, map, join, includes, concat, flow, first, last, get, eq, isEmpty, find, reduce, split, replace, uniqWith, uniqBy, matches} from 'lodash';
 
 
   
@@ -63,6 +49,11 @@ const collection = [
   {
     "path": "name",
     "strategy": "required",
+    "invalid": true
+  },
+    {
+    "path": "name",
+    "strategy": "reg_exp",
     "invalid": true
   },
   {
@@ -133,14 +124,16 @@ class PositionErrorsAdapter {
   }
 
   private groupBySections(localizedErrors: LocalizedError[]): GrouppedError[] {
+    console.log(localizedErrors, 'localizedErrors')
     return reduce(localizedErrors, (acc, error) => ({
       ...acc,
       //[error.sectionName]: uniqBy(concat(get(acc, error.sectionName, []), error), 'fieldName')
       [error.sectionName]: flow([
         () => get(acc, error.sectionName, []),
         (errors) => concat(errors, error),
+        (errors) => uniqBy(errors, isEqual)
         // TODO: !!! Adjust unig by field and strategy, one field can has few errors !!!
-        (errors) => uniqBy(errors, 'fieldName')
+        //(errors) => uniqBy(errors, 'fieldName')
       ])()
     }), {});
   }
